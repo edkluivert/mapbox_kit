@@ -1,0 +1,81 @@
+PODS:
+  - dartnative_audio (1.0.0)
+  - dartnative_ios (1.0.0):
+    - FlexLayout (= 2.0.10)
+  - dartnative_onnxruntime (1.6.4):
+    - onnxruntime-objc (~> 1.21)
+  - dartnative_path_provider (1.0.0)
+  - dartnative_skia (1.0.0)
+  - DartNativeCore (1.0.0)
+  - FlexLayout (2.0.10)
+  - mapbox_kit (0.1.0):
+    - MapboxMaps (= 11.31.0)
+  - MapboxCommon (24.31.0):
+    - Turf (= 4.0.0)
+  - MapboxCoreMaps (11.31.0):
+    - MapboxCommon (= 24.31.0)
+  - MapboxMaps (11.31.0):
+    - MapboxCommon (= 24.31.0)
+    - MapboxCoreMaps (= 11.31.0)
+    - Turf (= 4.0.0)
+  - onnxruntime-c (1.30.0)
+  - onnxruntime-objc (1.30.0):
+    - onnxruntime-objc/Core (= 1.30.0)
+  - onnxruntime-objc/Core (1.30.0):
+    - onnxruntime-c (= 1.30.0)
+  - Turf (4.0.0)
+
+DEPENDENCIES:
+  - dartnative_audio (from `.symlinks/plugins/dartnative_audio/ios`)
+  - dartnative_ios (from `.symlinks/plugins/dartnative_ios/ios`)
+  - dartnative_onnxruntime (from `.symlinks/plugins/dartnative_onnxruntime/ios`)
+  - dartnative_path_provider (from `.symlinks/plugins/dartnative_path_provider/ios`)
+  - dartnative_skia (from `.symlinks/plugins/dartnative_skia/ios`)
+  - DartNativeCore (from `DartNative`)
+  - mapbox_kit (from `.symlinks/plugins/mapbox_kit/ios`)
+
+SPEC REPOS:
+  trunk:
+    - FlexLayout
+    - MapboxCommon
+    - MapboxCoreMaps
+    - MapboxMaps
+    - onnxruntime-c
+    - onnxruntime-objc
+    - Turf
+
+EXTERNAL SOURCES:
+  dartnative_audio:
+    :path: ".symlinks/plugins/dartnative_audio/ios"
+  dartnative_ios:
+    :path: ".symlinks/plugins/dartnative_ios/ios"
+  dartnative_onnxruntime:
+    :path: ".symlinks/plugins/dartnative_onnxruntime/ios"
+  dartnative_path_provider:
+    :path: ".symlinks/plugins/dartnative_path_provider/ios"
+  dartnative_skia:
+    :path: ".symlinks/plugins/dartnative_skia/ios"
+  DartNativeCore:
+    :path: DartNative
+  mapbox_kit:
+    :path: ".symlinks/plugins/mapbox_kit/ios"
+
+SPEC CHECKSUMS:
+  dartnative_audio: e2a4158d3cbb660da6c439104e6c736b5c428621
+  dartnative_ios: 88d434758a21de28291d1ca70f9a144bd28548c7
+  dartnative_onnxruntime: 2c8b35e80ffdb325d165f94dc20f810cbfe88dc0
+  dartnative_path_provider: 6ba9009b0d1bbd4cd70c036ff7266916fca2566a
+  dartnative_skia: 67197a2566188d03e2a1f11f27d9d61494aa27c4
+  DartNativeCore: 225e49d9e35e234bcadc6b81586fc4275a1006ee
+  FlexLayout: ea94491c923485f7f28891cb5b10245d22df380b
+  mapbox_kit: e98df3f0b917bb2e3b6536a36928421e6a06ad8b
+  MapboxCommon: cc28b41df14f1de999550bc5040b4c33756f31ca
+  MapboxCoreMaps: bc2056387df6ba1d85bf2cd26d53a5c04f611461
+  MapboxMaps: ab7e1d900ee0f76f9e4ec70f02cb664412576ef9
+  onnxruntime-c: 36ca0f2cdbc89c6b330ec5287c3faf5ca6ed394d
+  onnxruntime-objc: b5edf18cf57daebe2ee59a7866aab12c8eeff940
+  Turf: c9eb11a65d96af58cac523460fd40fec5061b081
+
+PODFILE CHECKSUM: a03e9a0c7fcaedcd08b0af8d0fb67017e953be39
+
+COCOAPODS: 1.16.2

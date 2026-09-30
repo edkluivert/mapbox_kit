@@ -1,0 +1,19 @@
+include: package:lints/recommended.yaml
+
+# DartNative widget assists and warnings. Published on dartpub.dev, so the
+# hosted line is required: the analysis server resolves plugins with plain
+# `dart pub`, which only knows pub.dev.
+plugins:
+  assists_kit:
+    hosted: https://dartpub.dev
+    version: ^0.1.7
+
+# The style layers, sources, enums and data types are ported from
+# mapbox_maps_flutter with their upstream names and shapes kept intact.
+linter:
+  rules:
+    constant_identifier_names: false
+    type_init_formals: false
+    use_super_parameters: false
+    unintended_html_in_doc_comment: false
+    prefer_iterable_wheretype: false

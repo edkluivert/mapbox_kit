@@ -1,0 +1,71 @@
+group 'com.kluivert.mapboxkit'
+version '0.1.0'
+
+buildscript {
+    ext.kotlin_version = '2.2.20'
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.11.1'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
+// The app project resolves this module's transitive dependencies against
+// its own repositories, so the Mapbox release repository (no download token
+// needed) is added at the root, like the Flutter plugin does.
+rootProject.allprojects {
+    repositories {
+        google()
+        mavenCentral()
+        maven { url 'https://api.mapbox.com/downloads/v2/releases/maven' }
+    }
+}
+
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+
+android {
+    namespace 'com.kluivert.mapboxkit'
+    compileSdk 36
+    // Same NDK as the DartNative SDK ships, so the bundled
+    // libmapbox_kit.so matches the engine's.
+    ndkVersion '28.2.13676358'
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = '17'
+    }
+
+    sourceSets {
+        main.java.srcDirs += 'src/main/kotlin'
+    }
+
+    defaultConfig {
+        // DartNative's minimum; the Maps SDK needs 21+.
+        minSdk 24
+    }
+
+    // libmapbox_kit.so: the C entry points Dart looks up over FFI, bridged
+    // to MapboxKitBridge.kt over JNI.
+    externalNativeBuild {
+        cmake {
+            path 'src/main/cpp/CMakeLists.txt'
+        }
+    }
+}
+
+dependencies {
+    // The framework's view registry and plugin provider API; the app
+    // provides the runtime library.
+    compileOnly project(':dartnative_android')
+    implementation 'com.mapbox.maps:android-ndk27:11.31.0'
+    implementation 'androidx.annotation:annotation:1.9.1'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.8.7'
+}

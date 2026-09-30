@@ -1,0 +1,45 @@
+name: mapbox_kit
+description: >-
+  Mapbox maps for DartNative with the mapbox_maps_flutter API: MapWidget,
+  camera and animation, Standard style config, sources and layers, annotations
+  and the location puck, on Mapbox Maps SDK 11 over FFI.
+version: 0.1.0
+repository: https://github.com/edkluivert/mapbox_kit
+topics:
+  - dartnative
+  - mapbox
+  - maps
+  - geolocation
+
+environment:
+  sdk: ^3.11.0
+
+# `dn pub get` resolves dartnative from the installed SDK.
+dependencies:
+  dartnative: ^1.0.0
+  ffi: ^2.1.0
+  meta: ^1.16.0
+  turf: ^0.0.13
+
+dev_dependencies:
+  lints: ^6.0.0
+  test: ^1.32.0
+
+# iOS links the Swift sources in ios/ as an FFI plugin. Android registers
+# MapboxKitPlugin, which loads libmapbox_kit.so so JNI_OnLoad runs and
+# registers the native view provider. The registrant block makes
+# `dn pub get` add the MapboxKit.initialize() call (element factory +
+# loadSymbols) to the app's lib/dartnative_plugin_registrant.dart.
+dartnative:
+  plugin:
+    platforms:
+      ios:
+        ffiPlugin: true
+      android:
+        package: com.kluivert.mapboxkit
+        pluginClass: MapboxKitPlugin
+  registrant:
+    imports:
+      - package:mapbox_kit/mapbox_kit.dart
+    calls:
+      - MapboxKit.initialize();
