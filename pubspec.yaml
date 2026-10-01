@@ -3,7 +3,7 @@ description: >-
   Mapbox maps for DartNative with the mapbox_maps_flutter API: MapWidget,
   camera and animation, Standard style config, sources and layers, annotations
   and the location puck, on Mapbox Maps SDK 11 over FFI.
-version: 0.1.0
+version: 1.0.0
 repository: https://github.com/edkluivert/mapbox_kit
 topics:
   - dartnative

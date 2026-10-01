@@ -40,20 +40,44 @@ class RoundButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Interactive Liquid Glass: the capsule presses and springs back under
+    // the finger on iOS 26. The colour goes in as a tint so the material
+    // shows through; older iOS and Android fall back to the flat colour.
     return GlassEffectContainer(
+      interactive: true,
       borderRadius: BorderRadius.circular(99),
+      tint: withAlphaFraction(background, 0.72),
+      shadow: const BoxShadow(color: Color(0x33000000), blurRadius: 8, offset: Offset(0, 3)),
       child: GestureDetector(
         onTap: onTap,
         child: Container(
           width: size,
           height: size,
           alignment: Alignment.center,
-          decoration: BoxDecoration(color: background, shape: BoxShape.circle),
+          decoration: BoxDecoration(color: glassFallback(background), shape: BoxShape.circle),
           child: Icon(icon, size: 20, color: foreground),
         ),
       ),
     );
   }
+}
+
+/// Liquid Glass only exists on iOS 26; elsewhere the button keeps a solid
+/// colour so it stays readable over the map.
+Color glassFallback(Color color) => hasLiquidGlass ? Colors.transparent : color;
+
+/// [color] with its alpha replaced by [fraction] (0..1). DartNative's Color
+/// has no withOpacity/withValues yet, so this works on the raw ARGB value.
+Color withAlphaFraction(Color color, double fraction) =>
+    Color((color.value & 0x00FFFFFF) | ((fraction * 255).round() << 24));
+
+/// True where [GlassEffectContainer] renders a real material.
+final bool hasLiquidGlass = Platform.isIOS && _iosMajorVersion >= 26;
+
+int get _iosMajorVersion {
+  // "Version 26.0 (Build 23A340)" → 26
+  final match = RegExp(r'Version (\d+)').firstMatch(Platform.operatingSystemVersion);
+  return int.tryParse(match?.group(1) ?? '') ?? 0;
 }
 
 /// A white floating circle button with a shadow, as on the navigation
@@ -67,19 +91,24 @@ class FloatingButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 44,
-        height: 44,
-        margin: const EdgeInsets.only(bottom: 10),
-        alignment: Alignment.center,
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          shape: BoxShape.circle,
-          boxShadow: [BoxShadow(color: Color(0x33000000), blurRadius: 6, offset: Offset(0, 2))],
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: GlassEffectContainer(
+        interactive: true,
+        borderRadius: BorderRadius.circular(99),
+        tint: const Color(0xB3FFFFFF),
+        brightness: Brightness.light,
+        shadow: const BoxShadow(color: Color(0x33000000), blurRadius: 6, offset: Offset(0, 2)),
+        child: GestureDetector(
+          onTap: onTap,
+          child: Container(
+            width: 44,
+            height: 44,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(color: glassFallback(Colors.white), shape: BoxShape.circle),
+            child: Icon(icon, size: 22, color: active ? const Color(navBlue) : const Color(0xFF1F2937)),
+          ),
         ),
-        child: Icon(icon, size: 22, color: active ? const Color(navBlue) : const Color(0xFF1F2937)),
       ),
     );
   }
@@ -102,12 +131,18 @@ class TextPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(color: background, borderRadius: BorderRadius.circular(24)),
-        child: Text(text, style: TextStyle(color: foreground, fontSize: 15, fontFamily: monoFont)),
+    return GlassEffectContainer(
+      interactive: true,
+      borderRadius: BorderRadius.circular(24),
+      tint: withAlphaFraction(background, 0.8),
+      shadow: const BoxShadow(color: Color(0x2E000000), blurRadius: 8, offset: Offset(0, 3)),
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(color: glassFallback(background), borderRadius: BorderRadius.circular(24)),
+          child: Text(text, style: TextStyle(color: foreground, fontSize: 15, fontFamily: monoFont)),
+        ),
       ),
     );
   }

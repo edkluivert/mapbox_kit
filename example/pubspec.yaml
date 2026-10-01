@@ -32,6 +32,8 @@ dartnative_skia:
 dartnative:
   assets:
     - assets/dn-logo.png
+    # Your Mapbox token lives here (gitignored); copy mapbox.env.example.
+    - mapbox.env
 
 # Branded launch splash + app icon: add the dartnative_splash plugin from
 # dartpub.dev, then see tool/generate_app_assets.dart.

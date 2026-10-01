@@ -143,8 +143,11 @@ class _JournalScreenState extends State<JournalScreen> {
     if (journal.tapWasOnMarker) return;
     final position = context.point.coordinates;
     try {
+      // Both pins down (or a trip drawn): the tap just dismisses them. The
+      // next tap starts a fresh A.
       if (_routeShown || (_from != null && _to != null)) {
         await _clearTrip();
+        return;
       }
       if (_from == null) {
         setState(() {
@@ -340,7 +343,7 @@ class _JournalScreenState extends State<JournalScreen> {
   }
 
   /// The style pill on the left (style button, the style's name, and on
-  /// Standard the light-preset button) and Clear on the right once a place
+  /// Standard the light-preset button) and an X on the right once a place
   /// is picked.
   Widget _topBar() {
     final standard = _mapStyle.isStandard;
@@ -376,7 +379,13 @@ class _JournalScreenState extends State<JournalScreen> {
             ),
             const Spacer(),
             if (_place != null)
-              TextPill(text: 'Clear', onTap: _reset, background: _pill, foreground: _ink),
+              RoundButton(
+                icon: MaterialSymbolsRounded.close,
+                onTap: _reset,
+                background: _pill,
+                foreground: _ink,
+                size: 44,
+              ),
           ],
         ),
       ),
@@ -409,6 +418,12 @@ class _JournalScreenState extends State<JournalScreen> {
   /// Navigate and zoom-out buttons, bottom right. They live in their own
   /// column: a Row with an Expanded and two buttons only drew one of them
   /// on iOS.
+  Future<void> _zoomBy(double delta) async {
+    final journal = _journal;
+    if (journal == null || !_ready) return;
+    await zoomBy(journal.map, delta);
+  }
+
   Widget _buttons() {
     return Positioned(
       right: 20,
@@ -417,6 +432,20 @@ class _JournalScreenState extends State<JournalScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            RoundButton(
+              icon: MaterialSymbolsRounded.add,
+              onTap: () => _zoomBy(1),
+              background: _pill,
+              foreground: _ink,
+            ),
+            const SizedBox(height: 12),
+            RoundButton(
+              icon: MaterialSymbolsRounded.remove,
+              onTap: () => _zoomBy(-1),
+              background: _pill,
+              foreground: _ink,
+            ),
+            const SizedBox(height: 12),
             RoundButton(
               icon: MaterialSymbolsRounded.navigation,
               onTap: () => widget.onNavigate?.call(),

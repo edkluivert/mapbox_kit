@@ -22,15 +22,14 @@ Two demos of `mapbox_kit`, the Mapbox Maps SDK for DartNative:
 
 ## Run it
 
-You need a public Mapbox token (`pk.…`). Put it in a `.mapbox_token` file
-here (gitignored) and run:
+You need a public Mapbox token (`pk.…`). Copy `mapbox.env.example` to
+`mapbox.env` (gitignored, bundled as an asset), paste the token in, and run:
 
 ```sh
+cp mapbox.env.example mapbox.env   # then edit MAPBOX_ACCESS_TOKEN=pk.…
 dn pub get
-dn run -d <device-id> --dart-define=ACCESS_TOKEN=$(cat .mapbox_token)
+dn run -d <device-id>
 ```
-
-Or paste the token into `lib/config.dart` and run plain `dn run`.
 
 ## Switches
 
@@ -38,7 +37,7 @@ All in `lib/config.dart`:
 
 | Switch | Default | What it does |
 | --- | --- | --- |
-| `mapboxAccessToken` | from `--dart-define=ACCESS_TOKEN` | Your token, or paste it in. |
+| `mapboxAccessToken` | from `mapbox.env` | Your token, read at startup. |
 | `verboseLogs` | `false` | Extra readbacks from the SDK in the log. |
 
 ## Where things are

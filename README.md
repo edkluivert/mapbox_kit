@@ -97,15 +97,9 @@ dn run
 
 You should see San Francisco's Ferry Building with 3D buildings.
 
-Rather not put the token in source? Read it from the command line instead:
-
-```dart
-MapboxOptions.setAccessToken(const String.fromEnvironment('ACCESS_TOKEN'));
-```
-
-```sh
-dn run --dart-define=ACCESS_TOKEN=pk.your-token-here
-```
+Rather not put the token in source? Keep it in a gitignored env file bundled
+as an asset and read it at startup — the example's `lib/config.dart` shows a
+ten-line `mapbox.env` reader built on `loadAssetBytes`.
 
 ### Step 5 – wait for the style before you draw
 
@@ -314,9 +308,9 @@ await map.style.setStyleLayerProperty('hills', 'visibility', 'none');
 
 ```sh
 cd example
-echo pk.your-token-here > .mapbox_token   # gitignored
+cp mapbox.env.example mapbox.env   # gitignored; put MAPBOX_ACCESS_TOKEN=pk.… in it
 dn pub get
-dn run -d <device-id> --dart-define=ACCESS_TOKEN=$(cat .mapbox_token)
+dn run -d <device-id>
 ```
 
 - **Journal** – a night globe with four bracket markers. Tap one and the

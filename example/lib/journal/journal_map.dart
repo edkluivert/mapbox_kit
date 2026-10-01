@@ -274,12 +274,21 @@ class JournalMap {
         '{"type":"Feature","properties":{},"geometry":{"type":"LineString","coordinates":'
         '${route.coordinates}}}');
 
-    final camera = await map.cameraForCoordinatesPadding(
+    // Fit the whole trip tightly: slim padding, then a step closer than the
+    // fit itself so the streets read at trip scale rather than city scale.
+    final fit = await map.cameraForCoordinatesPadding(
       [for (final p in route.positions) Point(coordinates: p)],
       CameraOptions(pitch: 40, bearing: 0),
-      MbxEdgeInsets(top: 160, left: 60, bottom: 240, right: 60),
+      MbxEdgeInsets(top: 120, left: 28, bottom: 200, right: 28),
       null,
       null,
+    );
+    final camera = CameraOptions(
+      center: fit.center,
+      zoom: ((fit.zoom ?? 14) + 0.9).clamp(0.0, 22.0),
+      pitch: fit.pitch,
+      bearing: fit.bearing,
+      padding: fit.padding,
     );
     await map.flyTo(camera, MapAnimationOptions(duration: 1800));
     // Let the camera land before the line starts running.
@@ -369,10 +378,10 @@ class JournalMap {
     return map.easeTo(
       CameraOptions(
         center: Point(coordinates: s.position),
-        zoom: 17.2,
-        pitch: 62,
+        zoom: 18.6,
+        pitch: 66,
         bearing: s.heading,
-        padding: MbxEdgeInsets(top: 320, left: 0, bottom: 0, right: 0),
+        padding: MbxEdgeInsets(top: 400, left: 0, bottom: 0, right: 0),
       ),
       MapAnimationOptions(duration: milliseconds),
     );

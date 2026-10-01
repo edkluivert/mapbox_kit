@@ -163,8 +163,8 @@ class _NavigationScreenState extends State<NavigationScreen> {
         });
         _pinB = await _pins!.create(_pin('B', position));
       } else {
+        // Both pins down: the tap just dismisses them; the next one is A.
         await _reset();
-        await _onMapTap(context);
       }
     } catch (e) {
       dnLog('[navigation] could not drop a pin: $e');
@@ -335,6 +335,15 @@ class _NavigationScreenState extends State<NavigationScreen> {
     unawaited(NavigationVoice.speak(text));
   }
 
+  Future<void> _zoomBy(double delta) async {
+    final map = _map;
+    if (map == null || !_ready) return;
+    // While driving the follow camera eases every tick; a manual zoom would
+    // be overridden at once, so the buttons only act when not following.
+    if (_driving && !_overview) return;
+    await zoomBy(map, delta);
+  }
+
   void _toggleMute() {
     setState(() => _muted = !_muted);
     if (_muted) unawaited(NavigationVoice.stop());
@@ -442,6 +451,8 @@ class _NavigationScreenState extends State<NavigationScreen> {
       child: SafeArea(
         child: Column(
           children: [
+            FloatingButton(icon: MaterialSymbolsRounded.add, onTap: () => _zoomBy(1)),
+            FloatingButton(icon: MaterialSymbolsRounded.remove, onTap: () => _zoomBy(-1)),
             FloatingButton(
               icon: _muted ? MaterialSymbolsRounded.volume_off : MaterialSymbolsRounded.volume_up,
               onTap: _toggleMute,
@@ -461,12 +472,12 @@ class _NavigationScreenState extends State<NavigationScreen> {
     );
   }
 
-  /// "Navigate there", above the ETA bar once both pins are down.
+  /// "Navigate there", floating clear of the ETA bar once both pins are down.
   Widget _navigateButton() {
     return Positioned(
       left: 0,
       right: 0,
-      bottom: 104,
+      bottom: 156,
       child: Center(
         child: TextPill(
           text: _fetching ? 'Finding a route…' : 'Navigate there',

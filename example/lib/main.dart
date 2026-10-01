@@ -8,9 +8,10 @@
 //                 turn-by-turn driving with a Directions route, a bearing
 //                 puck, maneuver banner, ETA bar and spoken guidance.
 //
-// The switches (token, verbose logs) live in config.dart. Run with:
+// The token comes from mapbox.env (copy mapbox.env.example); the other
+// switches live in config.dart. Then just:
 //
-//   dn run -d <device-id> --dart-define=ACCESS_TOKEN=$(cat .mapbox_token)
+//   dn run -d <device-id>
 
 import 'package:dartnative/dartnative.dart';
 import 'package:mapbox_kit/mapbox_kit.dart';
@@ -22,7 +23,6 @@ import 'navigation/navigation_screen.dart';
 
 void main() {
   DartNativePluginRegistrant.registerAll();
-  if (mapboxAccessToken.isNotEmpty) MapboxOptions.setAccessToken(mapboxAccessToken);
   mapboxKitVerbose = verboseLogs;
   SystemChrome.defaultStyle = const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
@@ -43,6 +43,15 @@ class MapboxExample extends StatefulWidget {
 
 class _MapboxExampleState extends State<MapboxExample> {
   bool _navigating = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Read the token here, not in main(): mapbox.env is loaded through the
+    // framework's asset loader, which is only wired up once runApp has
+    // started (reading it earlier crashes at launch on Android).
+    if (mapboxAccessToken.isNotEmpty) MapboxOptions.setAccessToken(mapboxAccessToken);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -77,8 +86,8 @@ class _NoTokenScreen extends StatelessWidget {
         child: Padding(
           padding: EdgeInsets.all(32),
           child: Text(
-            'No Mapbox token.\n\nPaste it into lib/config.dart or run with\n'
-            'dn run --dart-define=ACCESS_TOKEN=\$(cat .mapbox_token)',
+            'No Mapbox token.\n\nCopy mapbox.env.example to mapbox.env\n'
+            'and paste your pk. token into it.',
             textAlign: TextAlign.center,
             style: TextStyle(color: Color(0xFF16191F), fontSize: 15, height: 1.5),
           ),

@@ -71,4 +71,5 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
-.mapbox_token
+*.env
+!*.env.example

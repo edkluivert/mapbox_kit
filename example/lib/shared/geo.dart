@@ -85,3 +85,13 @@ class RoutePlayer {
   }
 }
 
+
+/// Zooms the camera in (+) or out (-) by [delta] levels from where it is,
+/// keeping centre, pitch and bearing. Clamped to Mapbox's 0–22 range.
+Future<void> zoomBy(MapboxMap map, double delta) async {
+  final zoom = (await map.getCameraState()).zoom + delta;
+  await map.easeTo(
+    CameraOptions(zoom: zoom.clamp(0.0, 22.0)),
+    MapAnimationOptions(duration: 250),
+  );
+}
