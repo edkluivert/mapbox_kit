@@ -24,6 +24,7 @@ import 'navigation/navigation_screen.dart';
 void main() {
   DartNativePluginRegistrant.registerAll();
   mapboxKitVerbose = verboseLogs;
+  mapboxKitPerfLogs = perfLogs;
   SystemChrome.defaultStyle = const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
     statusBarBrightness: Brightness.light,

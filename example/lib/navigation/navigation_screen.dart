@@ -12,6 +12,7 @@ import 'package:mapbox_kit/mapbox_kit.dart';
 import '../config.dart';
 import '../shared/geo.dart';
 import '../shared/marker_images.dart';
+import '../shared/perf.dart';
 import '../shared/widgets.dart';
 import 'directions.dart';
 import 'drive_simulator.dart';
@@ -51,6 +52,8 @@ class _NavigationScreenState extends State<NavigationScreen> {
   bool _fetching = false;
   String? _error;
   DriveSimulator? _drive;
+  final DriveStepStats _stepStats = DriveStepStats('navigation');
+  final Stopwatch _slowUpdates = Stopwatch()..start();
   PointAnnotationManager? _pucks;
   PointAnnotation? _puck;
 
@@ -262,20 +265,29 @@ class _NavigationScreenState extends State<NavigationScreen> {
     dnLog('[navigation] started');
   }
 
-  /// One tick of the drive: move the puck, trim the route, follow.
+  /// One frame of the drive. The puck and the camera move in the same
+  /// frame, so the puck holds still on screen while the map moves under it;
+  /// the route trim and the banner follow ten times a second.
   Future<void> _onDriveUpdate(RouteSample s) async {
     final map = _map;
     final puck = _puck;
     if (map == null || puck == null) return;
+    final step = _stepStats.start();
     puck.geometry = Point(coordinates: s.position);
     puck.iconRotate = s.heading;
-    if (mounted) setState(() {});
-    try {
-      await _pucks!.update(puck);
+    final calls = <Future<void>>[_pucks!.update(puck)];
+    if (!_overview) calls.add(map.setCamera(_followCamera(s)));
+    final cameraMicros = step?.elapsedMicroseconds ?? 0;
+    if (_slowUpdates.elapsedMilliseconds >= 100) {
+      _slowUpdates.reset();
       for (final id in _routeLayers) {
-        await map.style.setStyleLayerProperty(id, 'line-trim-offset', [0.0, s.fraction]);
+        calls.add(map.style.setStyleLayerProperty(id, 'line-trim-offset', [0.0, s.fraction]));
       }
-      if (!_overview) await _follow(s, const Duration(milliseconds: 100));
+      if (mounted) setState(() {});
+    }
+    try {
+      await Future.wait(calls);
+      if (step != null) _stepStats.add(cameraMicros: cameraMicros, doneMicros: step.elapsedMicroseconds);
     } catch (e) {
       // The map is gone (screen closed or hot restart): stop for good.
       if (e is PlatformException && e.code == 'NO_MAP') {
@@ -296,16 +308,18 @@ class _NavigationScreenState extends State<NavigationScreen> {
 
   Future<void> _follow(RouteSample s, Duration duration) {
     return _map!.easeTo(
-      CameraOptions(
+      _followCamera(s),
+      MapAnimationOptions(duration: duration.inMilliseconds),
+    );
+  }
+
+  CameraOptions _followCamera(RouteSample s) => CameraOptions(
         center: Point(coordinates: s.position),
         zoom: _followZoom,
         pitch: _followPitch,
         bearing: s.heading,
         padding: MbxEdgeInsets(top: _followPaddingTop, left: 0, bottom: 0, right: 0),
-      ),
-      MapAnimationOptions(duration: duration.inMilliseconds),
-    );
-  }
+      );
 
   /// Fits the whole route, or goes back to following the puck.
   Future<void> _toggleOverview() async {

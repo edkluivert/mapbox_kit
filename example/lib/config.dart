@@ -17,6 +17,11 @@ final String mapboxAccessToken = _envValue('MAPBOX_ACCESS_TOKEN');
 /// with `dnLog` while the demos run.
 const bool verboseLogs = false;
 
+/// Prints, every 5 seconds while a map is busy, what the calls into the
+/// native side cost (mapbox_kit's `mapboxKitPerfLogs`), and how long each
+/// step of the two drives takes.
+const bool perfLogs = false;
+
 /// Reads `KEY=value` lines from the bundled `mapbox.env`. Blank lines and
 /// `#` comments are skipped; surrounding quotes on the value are dropped.
 String _envValue(String key) {
