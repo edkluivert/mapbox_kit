@@ -212,9 +212,34 @@ final class MapboxKitPlugin {
 public func MapboxKitInvoke(_ token: Int64,
                             _ method: UnsafePointer<CChar>,
                             _ argumentsJson: UnsafePointer<CChar>?) -> Int32 {
+    let start = DispatchTime.now().uptimeNanoseconds
     let name = String(cString: method)
     let arguments = Reply.decode(argumentsJson.map { String(cString: $0) })
-    return MapboxKitPlugin.shared.invoke(token: token, method: name, arguments: arguments)
+    let rc = MapboxKitPlugin.shared.invoke(token: token, method: name, arguments: arguments)
+    MapboxKitPerf.record(name, nanos: DispatchTime.now().uptimeNanoseconds - start)
+    return rc
+}
+
+// MARK: - Diagnostics
+
+/// The time each method spends on the main thread inside `MapboxKitInvoke`
+/// (decoding its arguments and running it), summed per method until Dart's
+/// `options#perfReport` reads and resets it. Dart prints it next to its own
+/// figures while `mapboxKitPerfLogs` is on.
+enum MapboxKitPerf {
+    private static var stats: [String: (count: Int, micros: Int, maxMicros: Int)] = [:]
+
+    static func record(_ method: String, nanos: UInt64) {
+        guard method != "options#perfReport" else { return }
+        let micros = Int(nanos / 1000)
+        let s = stats[method] ?? (0, 0, 0)
+        stats[method] = (s.count + 1, s.micros + micros, max(s.maxMicros, micros))
+    }
+
+    static func report() -> [String: Any] {
+        defer { stats.removeAll() }
+        return stats.mapValues { ["count": $0.count, "micros": $0.micros, "maxMicros": $0.maxMicros] }
+    }
 }
 
 @_cdecl("MapboxKitListen")

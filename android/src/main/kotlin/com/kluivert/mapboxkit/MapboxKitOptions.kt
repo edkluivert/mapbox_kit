@@ -41,6 +41,7 @@ object MapboxKitOptions {
                 if (v != null) settings.set(MapboxCommonSettings.LANGUAGE, Value.valueOf(v)) else settings.erase(MapboxCommonSettings.LANGUAGE)
                 null
             }
+            "perfReport" -> reply.run { MapboxKitPerf.report() }
             "clearData" -> MapboxMap.clearData { expected ->
                 if (expected.isError) reply.error("clearDataError", expected.error, null) else reply.success(null)
             }
