@@ -38,10 +38,11 @@ import 'src/native/mapbox_kit_ffi_bindings.dart';
 
 export 'package:turf/turf.dart' show Position, BBox;
 
-export 'src/debug.dart' show mapboxKitVerbose;
+export 'src/debug.dart' show mapboxKitPerfLogs, mapboxKitVerbose;
 export 'src/native/mapbox_kit_ffi_bindings.dart' show MapboxKitFFIBindings;
 
 part 'src/native/channel.dart';
+part 'src/perf.dart';
 part 'src/turf_adapters.dart';
 part 'src/types.dart';
 part 'src/events.dart';

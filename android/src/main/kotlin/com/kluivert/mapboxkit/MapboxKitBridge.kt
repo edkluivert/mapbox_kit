@@ -174,7 +174,16 @@ object MapboxKitBridge : DNAndroidPluginProvider {
     /** Returns 0 when accepted (the reply arrives later), 2 for an unknown method. */
     @JvmStatic
     fun invoke(token: Long, method: ByteArray, argumentsJson: ByteArray): Int {
+        val start = System.nanoTime()
         val name = String(method, Charsets.UTF_8)
+        try {
+            return invokeNamed(token, name, argumentsJson)
+        } finally {
+            MapboxKitPerf.record(name, System.nanoTime() - start)
+        }
+    }
+
+    private fun invokeNamed(token: Long, name: String, argumentsJson: ByteArray): Int {
         val args = Reply.decodeObject(String(argumentsJson, Charsets.UTF_8))
         val reply = Reply(token)
         if (name.startsWith("options#")) {

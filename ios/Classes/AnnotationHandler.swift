@@ -140,6 +140,10 @@ final class AnnotationHandler {
                 guard let index = manager.annotations.firstIndex(where: { $0.id == annotation.id }) else {
                     throw MapboxKitError("No annotation found with id: \(annotation.id)")
                 }
+                // Dart leaves the image out while it is the one the map has.
+                if d["image"] == nil, let image = manager.annotations[index].image {
+                    annotation.image = image
+                }
                 manager.annotations[index] = annotation
                 return nil
             }

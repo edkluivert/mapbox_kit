@@ -59,10 +59,21 @@ class PointAnnotationManager extends BaseAnnotationManager {
           .map((e) => PointAnnotation.fromJson(_requireMap(e)))
           .toList();
 
+  // The image bytes the native side holds for each annotation, by id: an
+  // update sends them again only when the annotation carries other bytes.
+  final Map<String, Uint8List> _sentImages = {};
+
+  PointAnnotation _created(dynamic reply) {
+    final annotation = PointAnnotation.fromJson(_requireMap(reply));
+    final image = annotation.image;
+    if (image != null) _sentImages[annotation.id] = image;
+    return annotation;
+  }
+
   /// Create a new annotation with the option.
   Future<PointAnnotation> create(PointAnnotationOptions annotation) async =>
-      PointAnnotation.fromJson(_requireMap(await _invoke(
-          _prefix, 'create', {'annotationOption': annotation.toJson()})));
+      _created(await _invoke(
+          _prefix, 'create', {'annotationOption': annotation.toJson()}));
 
   /// Create multi annotations with the options.
   Future<List<PointAnnotation?>> createMulti(
@@ -70,24 +81,45 @@ class PointAnnotationManager extends BaseAnnotationManager {
       ((await _invoke(_prefix, 'createMulti', {
         'annotationOptions': annotations.map((e) => e.toJson()).toList()
       })) as List)
-          .map((e) => e == null ? null : PointAnnotation.fromJson(_requireMap(e)))
+          .map((e) => e == null ? null : _created(e))
           .toList();
 
   /// Update an added annotation with new properties.
-  Future<void> update(PointAnnotation annotation) =>
-      _invoke(_prefix, 'update', {'annotation': annotation.toJson()});
+  ///
+  /// Its image is sent only when it is not the bytes the map already has
+  /// for it, so moving an annotation (a puck, every frame) sends its
+  /// position and nothing more.
+  Future<void> update(PointAnnotation annotation) {
+    final image = annotation.image;
+    final unchanged =
+        image != null && identical(image, _sentImages[annotation.id]);
+    if (image != null) _sentImages[annotation.id] = image;
+    return _invoke(_prefix, 'update',
+        {'annotation': annotation._toJson(image: !unchanged)});
+  }
 
   /// Delete an added annotation.
-  Future<void> delete(PointAnnotation annotation) =>
-      _invoke(_prefix, 'delete', {'annotation': annotation.toJson()});
+  Future<void> delete(PointAnnotation annotation) {
+    _sentImages.remove(annotation.id);
+    return _invoke(
+        _prefix, 'delete', {'annotation': annotation._toJson(image: false)});
+  }
 
   /// Delete all the annotation added by this manager.
-  Future<void> deleteAll() => _invoke(_prefix, 'deleteAll');
+  Future<void> deleteAll() {
+    _sentImages.clear();
+    return _invoke(_prefix, 'deleteAll');
+  }
 
   /// Delete multiple annotations added by this manager.
-  Future<void> deleteMulti(List<PointAnnotation> annotations) =>
-      _invoke(_prefix, 'deleteMulti',
-          {'annotations': annotations.map((e) => e.toJson()).toList()});
+  Future<void> deleteMulti(List<PointAnnotation> annotations) {
+    for (final a in annotations) {
+      _sentImages.remove(a.id);
+    }
+    return _invoke(_prefix, 'deleteMulti', {
+      'annotations': [for (final a in annotations) a._toJson(image: false)]
+    });
+  }
 
   // ── Layer-level properties ─────────────────────────────────────────────
 

@@ -168,10 +168,14 @@ class PointAnnotation {
   /// Custom data attached to the annotation, returned with the interaction events.
   Map<String, Object>? customData;
 
-  Map<String, dynamic> toJson() => {
+  Map<String, dynamic> toJson() => _toJson();
+
+  /// [toJson], without the image bytes when [image] is false: the manager
+  /// leaves them out of an update when the native side already has them.
+  Map<String, dynamic> _toJson({bool image = true}) => {
         'id': id,
         'geometry': geometry.toJson(),
-        ..._pointAnnotationFieldsToJson(this),
+        ..._pointAnnotationFieldsToJson(this, image: image),
       };
 
   static PointAnnotation fromJson(Map<String, dynamic> json) {
@@ -362,8 +366,10 @@ class PointAnnotationOptions {
       );
 }
 
-Map<String, dynamic> _pointAnnotationFieldsToJson(dynamic a) => _compact({
-      'image': _bytesToJson(a.image as Uint8List?),
+Map<String, dynamic> _pointAnnotationFieldsToJson(dynamic a,
+        {bool image = true}) =>
+    _compact({
+      'image': image ? _bytesToJson(a.image as Uint8List?) : null,
       'iconAnchor': (a.iconAnchor as IconAnchor?)?.index,
       'iconImage': a.iconImage,
       'iconOffset': a.iconOffset,

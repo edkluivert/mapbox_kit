@@ -53,6 +53,8 @@ enum MapboxKitOptions {
             reply.run { try? settings.get(key: MapboxCommonSettings.language, type: String.self).get() }
         case "setLanguage":
             reply.run { _ = settings.set(key: MapboxCommonSettings.language, value: str(a["language"])); return nil }
+        case "perfReport":
+            reply.run { MapboxKitPerf.report() }
         case "clearData":
             MapboxMap.clearData { error in
                 if let error { reply.error(error) } else { reply.success(nil) }

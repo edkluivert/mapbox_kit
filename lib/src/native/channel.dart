@@ -25,13 +25,22 @@ class PlatformException implements Exception {
 /// Replies always arrive later on the main thread, never inside the call.
 abstract final class _NativeChannel {
   static Future<dynamic> invoke(String method,
-      [Map<String, dynamic>? arguments]) {
+      [Map<String, dynamic>? arguments, bool record = true]) {
     final completer = Completer<dynamic>();
+    final perf = record && mapboxKitPerfLogs ? (Stopwatch()..start()) : null;
+    var encodeMicros = 0;
+    var bytes = 0;
     late final int token;
     token = MapboxKitFFIBindings.registerHandler((type, payload) {
       MapboxKitFFIBindings.removeHandler(token);
       if (completer.isCompleted) return;
-      mapboxKitLog('$method -> type=$type $payload');
+      if (perf != null) {
+        _Perf.record(method,
+            bytes: bytes,
+            encodeMicros: encodeMicros,
+            replyMicros: perf.elapsedMicroseconds);
+      }
+      if (mapboxKitVerbose) mapboxKitLog('$method -> type=$type $payload');
       // Runs inside a native callback, which must not throw.
       try {
         if (type == MapboxKitEventType.error) {
@@ -44,8 +53,12 @@ abstract final class _NativeChannel {
       }
     }, oneShot: true);
     final encoded = _encode(arguments);
+    if (perf != null) {
+      encodeMicros = perf.elapsedMicroseconds;
+      bytes = encoded.length;
+    }
     final rc = MapboxKitFFIBindings.invoke(token, method, encoded);
-    mapboxKitLog('invoke $method $encoded rc=$rc');
+    if (mapboxKitVerbose) mapboxKitLog('invoke $method $encoded rc=$rc');
     if (rc != 0) {
       MapboxKitFFIBindings.removeHandler(token);
       completer.completeError(_unavailable(rc, method));
@@ -63,7 +76,9 @@ abstract final class _NativeChannel {
       onListen: () {
         final t = MapboxKitFFIBindings.registerHandler((type, payload) {
           if (controller.isClosed) return;
-          mapboxKitLog('$channel event type=$type $payload');
+          if (mapboxKitVerbose) {
+            mapboxKitLog('$channel event type=$type $payload');
+          }
           try {
             if (type == MapboxKitEventType.error) {
               controller.addError(_decodeError(payload));

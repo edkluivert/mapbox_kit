@@ -14,6 +14,7 @@ import '../navigation/directions.dart';
 import '../navigation/drive_simulator.dart';
 import '../shared/geo.dart';
 import '../shared/marker_images.dart';
+import '../shared/perf.dart';
 import '../shared/widgets.dart';
 import 'places.dart';
 
@@ -42,6 +43,8 @@ class JournalMap {
   Cancelable? _taps;
   GeoJsonSource? _route;
   Timer? _drawing;
+  final DriveStepStats _stepStats = DriveStepStats('journal drive');
+  final Stopwatch _slowUpdates = Stopwatch()..start();
   final List<PointAnnotation> _pinAnnotations = [];
 
   /// Annotation id → place, and place → its current annotation. A marker is
@@ -350,16 +353,26 @@ class JournalMap {
     drive.start();
   }
 
+  /// One frame of the drive. The puck and the camera move in the same
+  /// frame, so the puck holds still on screen while the city moves under
+  /// it; the route trim and [onUpdate] follow ten times a second.
   Future<void> _onDriveTick(RouteSample s, void Function(DriveSimulator) onUpdate) async {
     final drive = _drive;
     final puck = _puck;
     if (drive == null || puck == null) return;
+    final step = _stepStats.start();
     puck.geometry = Point(coordinates: s.position);
     puck.iconRotate = s.heading;
+    final calls = <Future<void>>[_pucks!.update(puck), map.setCamera(_followCamera(s))];
+    final cameraMicros = step?.elapsedMicroseconds ?? 0;
+    final slow = _slowUpdates.elapsedMilliseconds >= 100 || drive.arrived;
+    if (slow) {
+      _slowUpdates.reset();
+      calls.add(_setTrim([0.0, s.fraction]));
+    }
     try {
-      await _pucks!.update(puck);
-      await _setTrim([0.0, s.fraction]);
-      await _follow(s, 100);
+      await Future.wait(calls);
+      if (step != null) _stepStats.add(cameraMicros: cameraMicros, doneMicros: step.elapsedMicroseconds);
     } catch (e) {
       // The map is gone (screen closed or hot restart): stop for good.
       if (e is PlatformException && e.code == 'NO_MAP') {
@@ -368,24 +381,23 @@ class JournalMap {
       }
       dnLog('[journal] drive tick failed: $e');
     }
-    onUpdate(drive);
+    if (slow) onUpdate(drive);
     if (drive.arrived) _drive = null; // the puck stays at B until the next clear
   }
 
   /// The follow camera: low, tilted, heading up, the puck two thirds of
   /// the way down the screen.
   Future<void> _follow(RouteSample s, int milliseconds) {
-    return map.easeTo(
-      CameraOptions(
+    return map.easeTo(_followCamera(s), MapAnimationOptions(duration: milliseconds));
+  }
+
+  CameraOptions _followCamera(RouteSample s) => CameraOptions(
         center: Point(coordinates: s.position),
         zoom: 18.6,
         pitch: 66,
         bearing: s.heading,
         padding: MbxEdgeInsets(top: 400, left: 0, bottom: 0, right: 0),
-      ),
-      MapAnimationOptions(duration: milliseconds),
-    );
-  }
+      );
 
   /// Stops the drive and removes the puck; the route stays as it is.
   Future<void> stopDrive() async {
