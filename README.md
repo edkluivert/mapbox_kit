@@ -6,7 +6,9 @@ API, so Mapbox's Flutter docs and examples apply almost line for line, on
 Mapbox Maps SDK 11.31.0 for iOS and Android.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/edkluivert/mapbox_kit/main/doc/demo.gif" width="300" alt="mapbox_kit example: a night globe, a tap flies into San Francisco, two taps drop A and B, the driving route runs between them, a puck drives it in 3D, then the style switches" />
+  <img src="https://raw.githubusercontent.com/edkluivert/mapbox_kit/main/doc/demo_city.gif" width="240" alt="mapbox_kit example: a tap on the night globe flies into San Francisco in 3D" />
+  <img src="https://raw.githubusercontent.com/edkluivert/mapbox_kit/main/doc/demo_trip.gif" width="240" alt="mapbox_kit example: two taps drop A and B, the driving route runs between them, then a puck drives it through the 3D city" />
+  <img src="https://raw.githubusercontent.com/edkluivert/mapbox_kit/main/doc/demo_navigation.gif" width="240" alt="mapbox_kit example: turn-by-turn navigation on Mapbox Streets with instruction banner, ETA bar and voice guidance (drive shown at 3x)" />
 </p>
 
 - **Every Mapbox style** – Standard (3D buildings, light presets, themes),
